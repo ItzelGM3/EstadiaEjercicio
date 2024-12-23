@@ -1,0 +1,84 @@
+﻿@page "/historial"
+@using Ejercicio.Models
+@using Ejercicio.Services
+@inject HttpClient Http
+@inject UsuariosServicios UsuariosServicios
+@inject NavigationManager navigationManager
+
+<h1>Historial</h1>
+
+<p role="status"></p>
+
+<div>
+	<button @onclick="RegistrarEntrada" class="btn btn-success">Registrar Entrada</button>
+	<button @onclick="RegistrarSalida" class="btn btn-danger">Registrar Salida</button>
+</div>
+
+@if (historial != null && historial.Any())
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Fecha Entrada</th>
+				<th>Fecha Salida</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in historial)
+			{
+				<tr>
+					<td>@item.FechaEntrada</td>
+					<td>@item.FechaSalida</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+else
+{
+	<p>No hay registros disponibles.</p>
+}
+
+@code {
+	private List<Models.App> historial = new List<Models.App>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await CargarHistorial();
+	}
+
+	private async Task CargarHistorial()
+	{
+		var usuario = UsuariosServicios.GetUsuarioActual();
+		if (usuario != null)
+		{
+			historial = await Http.GetFromJsonAsync<List<Models.App>>($"https://localhost:44361/api/Usuarios/historial?usuarioId={usuario.Id}");
+		}
+	}
+
+	private async Task RegistrarEntrada()
+	{
+		var response = await Http.PostAsync("https://localhost:44361/api/Usuarios/entrada", null);
+		if (response.IsSuccessStatusCode)
+		{
+			await CargarHistorial();
+		}
+	}
+
+	private async Task RegistrarSalida()
+	{
+		var response = await Http.PostAsync("https://localhost:44361/api/Usuarios/salida", null);
+		if (response.IsSuccessStatusCode)
+		{
+			await CargarHistorial();
+		}
+	}
+	private void Salir()
+	{
+		navigationManager.NavigateTo("/Login");
+	}
+}
+
+<div>
+    <button @onclick="Salir" class="btn btn-success">Salir</button>
+</div>

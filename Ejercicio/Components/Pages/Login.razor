@@ -1,0 +1,59 @@
+﻿@page "/Login"
+@using Ejercicio.Services
+@inject UsuariosServicios UsuariosServicios
+@inject NavigationManager NavigationManager
+@using Ejercicio.Models
+
+<h3>Login</h3>
+
+<EditForm Model="loginRequest" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="nombre">Nombre:</label>
+        <InputText id="nombre" class="form-control" @bind-Value="loginRequest.Nombre" />
+    </div>
+
+    <div class="form-group">
+        <label for="contrasena">Contraseña:</label>
+        <InputText id="contrasena" class="form-control" type="password" @bind-Value="loginRequest.Contrasena" />
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+    </div>
+</EditForm>
+
+@if (loginErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @loginErrorMessage
+    </div>
+}
+
+@code {
+    private LoginRequest2 loginRequest = new LoginRequest2();
+    private string? loginErrorMessage;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var isSuccess = await UsuariosServicios.Login(loginRequest);
+
+            if (isSuccess)
+            {
+                NavigationManager.NavigateTo("/historial");
+            }
+            else
+            {
+                loginErrorMessage = "Usuario o contraseña incorrectos.";
+            }
+        }
+        catch (Exception ex)
+        {
+            loginErrorMessage = $"Error al iniciar sesión: {ex.Message}";
+        }
+    }
+}
